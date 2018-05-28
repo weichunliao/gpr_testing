@@ -27,6 +27,9 @@ ds <- fread("./housing.data")
 feature_names <- c("CRIM", "ZN", "INDUS", "CHAS", "NOX", "RM", "AGE", "DIS",
                    "RAD", "TAX", "PTRATIO", "B", "LSTAT", "MEDV")
 ds <- setNames(ds, feature_names)
+write.csv(ds, file = "housing.csv")
+
+
 ds <- as.data.frame(apply(ds, 2, as.numeric))
 
 ndata <- nrow(ds)

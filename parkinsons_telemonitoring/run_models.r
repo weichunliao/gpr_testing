@@ -4,6 +4,8 @@ library(xgboost)
 library(FNN)
 library(glmnet)
 library(ranger)
+
+library(baeirGPR)
 #####
 rmse <- function(y_hat, y, method = "") {
   out <- sqrt(mean((y - y_hat)^2))
@@ -11,19 +13,19 @@ rmse <- function(y_hat, y, method = "") {
   return(out)
 }
 #####
-source('~/Desktop/baeirGPR/R/call_by_user.R')
-Rcpp::sourceCpp('~/Desktop/baeirGPR/src/matprod.cpp')
-source('~/Desktop/baeirGPR/R/gpr.R')
-source('~/Desktop/baeirGPR/R/local_gpr.R')
-source('~/Desktop/baeirGPR/R/gpr_tuning.R')
-source('~/Desktop/baeirGPR/R/boosting_gpr.R')
+# source('~/Desktop/baeirGPR/R/call_by_user.R')
+# Rcpp::sourceCpp('~/Desktop/baeirGPR/src/matprod.cpp')
+# source('~/Desktop/baeirGPR/R/gpr.R')
+# source('~/Desktop/baeirGPR/R/local_gpr.R')
+# source('~/Desktop/baeirGPR/R/gpr_tuning.R')
+# source('~/Desktop/baeirGPR/R/boosting_gpr.R')
 #####
-setwd("~/Desktop/gpr_testing/parkinsons_telemonitoring")
+# setwd("~/Desktop/gpr_testing/parkinsons_telemonitoring")
 
 # The main aim of the data is to predict the
 # motor and total UPDRS scores ('motor_UPDRS' and 'total_UPDRS') from the 16
 # voice measures.
-ds <- fread('~/Desktop/gpr_testing/parkinsons_telemonitoring/parkinsons_updrs.data')
+ds <- fread('./parkinsons_updrs.data')
 
 ds <- as.data.frame(apply(ds, 2, as.numeric))
 feature_names <- c('subjuct_num', 'age', 'sex', 'test_time', 'motor_UPDRS',
@@ -106,54 +108,55 @@ ds2_train_y <- ds2_train_y1
 ds2_test_y <- ds2_test_y1
 # ds2_test_y <- ds2_test_y2
 
-
-
 # gpr2
-bsize = 50
-nmodel = 300
+bsize = 100
+nmodel = 500
 update_k = 20
 lr = 0.01
 session_pid = Sys.getpid()
 cmd_arg = paste('pidstat \\-r \\-t 15 \\-p', session_pid, sep = ' ')
-system(paste(cmd_arg, '> gbm2_bsize_all_nmodel300.txt &'))
+system(paste(cmd_arg, '> gbm2_bsize_100_nmodel500.txt &'))
 t1=system.time(gbm_model1 <- gbm_train(ds2_train_x, ds2_train_y, ds2_test_x, ds2_test_y, pred_method = "2",
                                        n_model = nmodel, batch_size = bsize, lr = lr, tune_param = TRUE,
-                                       update_kparam_tiems = update_k,
+                                       update_kparam_tiems = update_k, tune_size = 1000,
                                        kname = "gaussiandotrel", ktheta = kern_param1$thetarel,
                                        kbetainv = kern_param1$betainv))
-
-
-
-
+system(paste("kill $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
 
 
 #gpr3
-bsize = 50
-nmodel = 300
+bsize = 100
+nmodel = 700
 update_k = 20
 lr = 0.01
 session_pid = Sys.getpid()
 cmd_arg = paste('pidstat \\-r \\-t 15 \\-p', session_pid, sep = ' ')
-system(paste(cmd_arg, '> gbm2_bsize_all_nmodel300.txt &'))
+system(paste(cmd_arg, '> gbm3_bsize100_nmodel700.txt &'))
 t2=system.time(gbm_model2 <- gbm_train(ds2_train_x, ds2_train_y, ds2_test_x, ds2_test_y, pred_method = "3",
                                        n_model = nmodel, batch_size = bsize, lr = lr, tune_param = FALSE,
-                                       update_kparam_tiems = update_k,
+                                       update_kparam_tiems = update_k, tune_size = 1000,
                                        kname = "gaussiandotrel", ktheta = kern_param1$thetarel,
                                        kbetainv = kern_param1$betainv))
+system(paste("kill $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
+
 
 #gpr sr
-bsize = 50
-nmodel = 300
+bsize = 670
+nmodel = 500
 update_k = 20
 lr = 0.01
 session_pid = Sys.getpid()
 cmd_arg = paste('pidstat \\-r \\-t 15 \\-p', session_pid, sep = ' ')
-system(paste(cmd_arg, '> gbm2_bsize_all_nmodel300.txt &'))
+system(paste(cmd_arg, '> sr_bsize670_nmodel500.txt &'))
 t3=system.time(gbm_model3 <- gbm_train(ds2_train_x, ds2_train_y, ds2_test_x, ds2_test_y, pred_method = "gbm_sr",
                                        n_model = nmodel, batch_size = bsize, lr = lr, tune_param = TRUE,
-                                       update_kparam_tiems = update_k,
+                                       update_kparam_tiems = update_k, tune_size = 1000,
                                        kname = "gaussiandotrel", ktheta = kern_param1$thetarel,
                                        kbetainv = kern_param1$betainv))
+system(paste("kill $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
+
+
+
 cat(" baeirGPR rmse =", tail(gbm_model1$test_rmse))
 cat(" baeirGPR rmse (col sampling) =", tail(gbm_model2$test_rmse))
 cat(" baeirGPR rmse (gbm sr)=", tail(gbm_model3$test_rmse))

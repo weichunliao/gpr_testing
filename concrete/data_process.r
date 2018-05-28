@@ -111,23 +111,37 @@ t1
 cat(" baeirGPR rmse =", tail(gbm_model1$test_rmse))
 cat("Min baeirGPR (row)  rmse =", min(gbm_model1$test_rmse))
 # gpr col
- t2
+kern_param1 = readRDS('kern_param1.rds')
+bsize = 100
+nmodel = 600
+update_k = 20
+lr = 0.01
+session_pid = Sys.getpid()
+cmd_arg = paste('pidstat \\-r \\-t 15 \\-p', session_pid, sep = ' ')
+system(paste(cmd_arg, '> gbm3_bsize_100_nmodel600.txt &'))
+t2=system.time(gbm_model2 <- gbm_train(ds2_train_x, ds2_train_y, ds2_test_x, ds2_test_y, pred_method = "3",
+                                       n_model = nmodel, batch_size = bsize, lr = lr, tune_param = FALSE,
+                                       update_kparam_tiems = update_k,
+                                       kname = kern_param1$kernelname, ktheta = kern_param1$thetarel,
+                                       kbetainv = kern_param1$betainv))
+system(paste("kill $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
+
 cat(" baeirGPR rmse =", tail(gbm_model2$test_rmse))
 cat("Min baeirGPR (col) rmse =", min(gbm_model2$test_rmse))
 # gpr sr
 bsize = 670
-nmodel = 300
+nmodel = 30
 update_k = 20
 lr = 0.01
-session_pid = Sys.getpid()
-cmd_arg = paste('pidstat \\-r \\-t 10 \\-p', session_pid, sep = ' ')
-system(paste(cmd_arg, '> sr_bsize_670_nmodel300.txt &'))
+# session_pid = Sys.getpid()
+# cmd_arg = paste('pidstat \\-r \\-t 10 \\-p', session_pid, sep = ' ')
+# system(paste(cmd_arg, '> sr_bsize_670_nmodel300.txt &'))
 t3=system.time(gbm_model3 <- gbm_train(ds2_train_x, ds2_train_y, ds2_test_x, ds2_test_y, pred_method = "gbm_sr",
                                        n_model = nmodel, batch_size = bsize, lr = lr, tune_param = TRUE,
                                        update_kparam_tiems = update_k,
                                        kname = "gaussiandotrel", ktheta = kern_param1$thetarel,
                                        kbetainv = kern_param1$betainv))
-system(paste("kill $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
+# system(paste("kill $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
 t3
 cat(" baeirGPR rmse =", tail(gbm_model3$test_rmse))
 cat("Min baeirGPR (sr) rmse =", min(gbm_model3$test_rmse))

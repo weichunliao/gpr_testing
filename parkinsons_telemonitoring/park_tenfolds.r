@@ -48,9 +48,9 @@ flds <- createFolds(c(1:ndata), k = k, list = TRUE, returnTrain = FALSE)
 results = vector("list", k)
 rmse_list = vector('numeric')
 
-# method = "gbm2"
+method = "gbm2"
 # method = "gbm3"
-method = "gbm_sr"
+# method = "gbm_sr"
 # method = "ols"
 # method = "losso"
 # method = "ridge"
@@ -91,8 +91,8 @@ for (kfld in c(1:k)) {
 
   if (method == "gbm2") {
     kern_param1 = readRDS('./kern_param1.rds')
-    bsize = 100
-    nmodel = 700
+    bsize = 2000
+    nmodel = 500
     update_k = 20
     lr = 0.1
     t1=system.time(gbm_model1 <- gbm_train(k_ds2_train_x, k_ds2_train_y, k_ds2_test_x, k_ds2_test_y,
@@ -117,10 +117,10 @@ for (kfld in c(1:k)) {
     results[[kfld]] = gbm_model2$test_rmse
   } else if (method == 'gbm_sr') {
     kern_param1 = readRDS('./kern_param1.rds')
-    bsize = 2250
+    bsize = 1250
     nmodel = 500
     update_k = 20
-    lr = 0.01
+    lr = 0.1
     t3=system.time(gbm_model3 <- gbm_train(k_ds2_train_x, k_ds2_train_y, k_ds2_test_x, k_ds2_test_y,
                                            pred_method = "gbm_sr", tune_size = 1000,
                                            n_model = nmodel, batch_size = bsize, lr = lr, tune_param = TRUE,

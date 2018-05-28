@@ -6,7 +6,7 @@ library(glmnet)
 library(ranger)
 library(e1071)
 
-library(baeirGPR)
+# library(baeirGPR)
 #####
 rmse <- function(y_hat, y, method = "") {
   out <- sqrt(mean((y - y_hat)^2))
@@ -71,48 +71,48 @@ ds2_train_y <- as.matrix(ds2_train_y)
 ds2_test_x <- model.matrix(~.-1, ds2_test_x)
 ds2_test_y <- as.matrix(ds2_test_y)
 
-# kern_param1 = gpr_tune(ds2_train_x, ds2_train_y, kernelname = "rbf",
-#                        optim_report = 5, optim_ard_report = 5,
-#                        ARD = T, optim_ard_max = 50)
-# kern_param1 = gpr_tune(ds2_train_x, ds2_train_y, kernelname = "rbf",
-#                        optim_report = 5, optim_ard_report = 5,
-#                        ARD = T, optim_ard_max = 50, init_betainv = kern_param1$betainv,
-#                        init_theta = kern_param1$thetarel)
+kern_param1 = gpr_tune(ds2_train_x, ds2_train_y, kernelname = "rbf",
+                       optim_report = 5, optim_ard_report = 5,
+                       ARD = T, optim_ard_max = 50)
+kern_param1 = gpr_tune(ds2_train_x, ds2_train_y, kernelname = "rbf",
+                       optim_report = 5, optim_ard_report = 5,
+                       ARD = T, optim_ard_max = 50, init_betainv = kern_param1$betainv,
+                       init_theta = kern_param1$thetarel)
 # saveRDS(kern_param1, file='kern_param1.rds')
 # ===============================
 kern_param1 = readRDS('kern_param1.rds')
-bsize = 50
-nmodel = 300
+bsize = nrow(ds2_train_x)
+nmodel = 3
 update_k = 20
 lr = 0.01
-session_pid = Sys.getpid()
-cmd_arg = paste('pidstat \\-r \\-t 5 \\-p', session_pid, sep = ' ')
-system(paste(cmd_arg, '> bsize_50_nmodel_200.txt &'))
+# session_pid = Sys.getpid()
+# cmd_arg = paste('pidstat \\-r \\-t 5 \\-p', session_pid, sep = ' ')
+# system(paste(cmd_arg, '> bsize_50_nmodel_200.txt &'))
 t1=system.time(gbm_model1 <- gbm_train(ds2_train_x, ds2_train_y, ds2_test_x, ds2_test_y, pred_method = "2",
                                        n_model = nmodel, batch_size = bsize, lr = lr, tune_param = TRUE,
                                        update_kparam_tiems = update_k,
                                        kname = kern_param1$kernelname, ktheta = kern_param1$thetarel,
                                        kbetainv = kern_param1$betainv))
-system(paste("kill -15 $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
+# system(paste("kill -15 $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
 #
 
-bsize = 50
-nmodel = 300
+bsize = nrow(ds2_train_x)
+nmodel = 3
 update_k = 20
 lr = 0.01
-session_pid = Sys.getpid()
-cmd_arg = paste('pidstat \\-r \\-t 10 \\-p', session_pid, sep = ' ')
-system(paste(cmd_arg, '> gbm3_bsize_50_nmodel_300.txt &'))
+# session_pid = Sys.getpid()
+# cmd_arg = paste('pidstat \\-r \\-t 10 \\-p', session_pid, sep = ' ')
+# system(paste(cmd_arg, '> gbm3_bsize_50_nmodel_300.txt &'))
 t2=system.time(gbm_model2 <- gbm_train(ds2_train_x, ds2_train_y, ds2_test_x, ds2_test_y, pred_method = "3",
                                        n_model = nmodel, batch_size = bsize, lr = lr, tune_param = FALSE,
                                        update_kparam_tiems = update_k,
                                        kname = kern_param1$kernelname, ktheta = kern_param1$thetarel,
                                        kbetainv = kern_param1$betainv))
-system(paste("kill -15 $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
+# system(paste("kill -15 $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
 
 #
-bsize = 110
-nmodel = 300
+bsize = nrow(ds2_train_x)
+nmodel = 3
 update_k = 20
 lr = 0.01
 session_pid = Sys.getpid()

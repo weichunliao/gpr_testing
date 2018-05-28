@@ -24,6 +24,7 @@ setnames(ds1, c('yy', paste('x', 1:90, sep = '')))
 ds1 <- as.data.frame(ds1)
 
 # normalize to mean 0 and unit variance.
+mean_shift = mean(ds1$yy)
 ds1$yy <- ds1$yy - mean(ds1$yy)
 ds1_train = ds1[1:463715, ]
 # ds1_test = ds1[463716:nrow(ds1),]
@@ -44,7 +45,7 @@ ds2_train <- ds2_train[sample(nrow(ds2_train)),]
 
 # step2.1 set the size of training data
 # ssize <- 460000
-# ssize <- 2000
+# ssize <- 20000
 ssize <- 0
 # > nrow(ds1)
 # [1] 515345
@@ -96,38 +97,71 @@ saveRDS(kern_param2n, "kern_param2n.rds")
 
 # run gbm2
 kern_param2 = readRDS('./kern_param2.rds')
+bsize = 3000
+nmodel = 1000
+update_k = 50
+lr = 0.3
+# session_pid = Sys.getpid()
+# cmd_arg = paste('pidstat \\-r \\-t 60 \\-p', session_pid, sep = ' ')
+# system(paste(cmd_arg, '> gbm2_bsize4000_nmodel500.txt &'))
+t1=system.time(gbm_model1 <- gbm_train(ds2_trainmx, ds2_train_y, ds2_testmx, ds2_test_y, pred_method = "2",
+                                       n_model = nmodel, batch_size = bsize, lr = lr, tune_param = TRUE,
+                                       update_kparam_tiems = update_k, decay_lr = 0.9, tune_size = 1000,
+                                       kname = kern_param2$kernelname, ktheta = kern_param2$thetarel,
+                                       kbetainv = kern_param2$betainv))
+# system(paste("kill $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
+
+# run gbm3
+kern_param2n = readRDS('./kern_param2n.rds')
+bsize = 500
+nmodel = 500
+update_k = 50
+lr = 0.4
+# session_pid = Sys.getpid()
+# cmd_arg = paste('pidstat \\-r \\-t 60 \\-p', session_pid, sep = ' ')
+# system(paste(cmd_arg, '> gbm3_bsize2000_nmodel500.txt &'))
+t2=system.time(gbm_model2 <- gbm_train(ds2_trainmx, ds2_train_y, ds2_testmx, ds2_test_y, pred_method = "3",
+                                       n_model = nmodel, batch_size = bsize, lr = lr, tune_param = FALSE,
+                                       update_kparam_tiems = update_k, tune_size = 1000,
+                                       kname = kern_param2n$kernelname, ktheta = kern_param2n$thetarel,
+                                       kbetainv = kern_param2n$betainv))
+# system(paste("kill $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
+
+
+# run gpr_sr
+kern_param2 = readRDS('./kern_param2.rds')
+bsize = 330
+nmodel = 500
+update_k = 50
+lr = 0.4
+# session_pid = Sys.getpid()
+# cmd_arg = paste('pidstat \\-r \\-t 60 \\-p', session_pid, sep = ' ')
+# system(paste(cmd_arg, '> sr_bsize5000_nmodel500.txt &'))
+t3=system.time(gbm_model3 <- gbm_train(ds2_trainmx, ds2_train_y, ds2_testmx, ds2_test_y, pred_method = "gbm_sr",
+                                       n_model = nmodel, batch_size = bsize, lr = lr, tune_param = TRUE,
+                                       update_kparam_tiems = update_k, tune_size = 1000,
+                                       kname = "gaussiandotrel", ktheta = kern_param2$thetarel,
+                                       kbetainv = kern_param2$betainv))
+# system(paste("kill $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
+
+
+# run gbm4
+kern_param2n = readRDS('./kern_param2n.rds')
 bsize = 100
 nmodel = 700
 update_k = 50
 lr = 0.01
 session_pid = Sys.getpid()
 cmd_arg = paste('pidstat \\-r \\-t 60 \\-p', session_pid, sep = ' ')
-system(paste(cmd_arg, '> gbm2_bsize100_nmodel700.txt &'))
-t1=system.time(gbm_model1 <- gbm_train(ds2_trainmx, ds2_train_y, ds2_testmx, ds2_test_y, pred_method = "2",
-                                       n_model = nmodel, batch_size = bsize, lr = lr, tune_param = TRUE,
-                                       update_kparam_tiems = update_k, decay_lr = 0.9,
-                                       kname = kern_param2$kernelname, ktheta = kern_param2$thetarel,
-                                       kbetainv = kern_param2$betainv))
-system(paste("kill $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
-
-# run gbm3
-kern_param2n = readRDS('./kern_param2n.rds')
-bsize = 300
-nmodel = 500
-update_k = 50
-lr = 0.01
-session_pid = Sys.getpid()
-cmd_arg = paste('pidstat \\-r \\-t 60 \\-p', session_pid, sep = ' ')
-system(paste(cmd_arg, '> gbm3_bsize300_nmodel500.txt &'))
+system(paste(cmd_arg, '> gbm4_bsize100_nmodel700.txt &'))
 t2=system.time(gbm_model2 <- gbm_train(ds2_trainmx, ds2_train_y, ds2_testmx, ds2_test_y, pred_method = "3",
                                        n_model = nmodel, batch_size = bsize, lr = lr, tune_param = FALSE,
-                                       update_kparam_tiems = update_k,
+                                       update_kparam_tiems = update_k, tune_size = 1000, selected_n_feature = 45,
                                        kname = kern_param2n$kernelname, ktheta = kern_param2n$thetarel,
                                        kbetainv = kern_param2n$betainv))
 system(paste("kill $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
 
 
-# run gpr_r
 
 
 # ols
@@ -172,25 +206,19 @@ rmse(pred_rf2, ds2_test_y, "random forest")
 
 # try svr ###########################
 #  linear
-mdl_svr = svm(yy~., ds2_train, kernel = "linear")
+time.linear = system.time(mdl_svr <- svm(yy~., ds2_train, kernel = "linear"))
 svr.pred = predict(mdl_svr, ds2_testmx)
 rmse_svr = rmse(svr.pred, ds2_test_y, "svr linear")
 
 # poly
-mdl_svr = svm(yy~., ds2_train, kernel = "polynomial", degree = 3)
+time.poly = system.time(mdl_svr <- svm(yy~., ds2_train, kernel = "polynomial", degree = 3))
 svr.pred = predict(mdl_svr, ds2_testmx)
 rmse_svr = rmse(svr.pred, ds2_test_y, "svr poly")
 
 # rbf
-mdl_svr = tune.svm(yy~., data = ds2_train, kernel = "radial", gamma = 2^c(-8:0), cost = 2^c(-4:4))
+time.rbf = system.time(mdl_svr <- tune.svm(yy~., data = ds2_train, kernel = "radial", gamma = 2^c(-8:0), cost = 2^c(-4:4)))
 svr.pred = predict(mdl_svr$best.model, ds2_testmx)
 rmse_svr = rmse(svr.pred, ds2_test_y, "svr rbf")
-
-
-
-
-
-
 
 
 
