@@ -5,7 +5,7 @@ library(FNN)
 library(glmnet)
 library(ranger)
 
-library(baeirGPR)
+# library(baeirGPR)
 #####
 rmse <- function(y_hat, y, method = "") {
   out <- sqrt(mean((y - y_hat)^2))
@@ -13,12 +13,12 @@ rmse <- function(y_hat, y, method = "") {
   return(out)
 }
 #####
-# source('~/Desktop/baeirGPR/R/call_by_user.R')
-# Rcpp::sourceCpp('~/Desktop/baeirGPR/src/matprod.cpp')
-# source('~/Desktop/baeirGPR/R/gpr.R')
-# source('~/Desktop/baeirGPR/R/local_gpr.R')
-# source('~/Desktop/baeirGPR/R/gpr_tuning.R')
-# source('~/Desktop/baeirGPR/R/boosting_gpr.R')
+source('~/Desktop/baeirGPR/R/call_by_user.R')
+Rcpp::sourceCpp('~/Desktop/baeirGPR/src/matprod.cpp')
+source('~/Desktop/baeirGPR/R/gpr.R')
+source('~/Desktop/baeirGPR/R/local_gpr.R')
+source('~/Desktop/baeirGPR/R/gpr_tuning.R')
+source('~/Desktop/baeirGPR/R/boosting_gpr.R')
 #####
 setwd("~/Desktop/gpr_testing/concrete")
 
@@ -130,8 +130,8 @@ cat(" baeirGPR rmse =", tail(gbm_model2$test_rmse))
 cat("Min baeirGPR (col) rmse =", min(gbm_model2$test_rmse))
 # gpr sr
 bsize = 670
-nmodel = 30
-update_k = 20
+nmodel = 10
+update_k = 6
 lr = 0.01
 # session_pid = Sys.getpid()
 # cmd_arg = paste('pidstat \\-r \\-t 10 \\-p', session_pid, sep = ' ')

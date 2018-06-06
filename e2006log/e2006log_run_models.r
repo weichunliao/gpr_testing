@@ -15,11 +15,11 @@ rmse <- function(y_hat, y, method = "") {
   return(out)
 }
 #####
-
 setwd('~/Desktop/gpr_testing/e2006log/')
 
-ds_train = fread('./log1p.E2006.train')
-ds_test = fread('./log1p.E2006.test')
+ds_train = read.csv('./log1p.E2006.train')
+ds_test = read.csv('./log1p.E2006.test')
+
 
 
 

@@ -45,7 +45,7 @@ ds2_train <- ds2_train[sample(nrow(ds2_train)),]
 
 # step2.1 set the size of training data
 # ssize <- 460000
-# ssize <- 20000
+# ssize <- 8000
 ssize <- 0
 # > nrow(ds1)
 # [1] 515345
@@ -130,10 +130,10 @@ t2=system.time(gbm_model2 <- gbm_train(ds2_trainmx, ds2_train_y, ds2_testmx, ds2
 
 # run gpr_sr
 kern_param2 = readRDS('./kern_param2.rds')
-bsize = 330
+bsize = 6750
 nmodel = 500
 update_k = 50
-lr = 0.4
+lr = 0.3
 # session_pid = Sys.getpid()
 # cmd_arg = paste('pidstat \\-r \\-t 60 \\-p', session_pid, sep = ' ')
 # system(paste(cmd_arg, '> sr_bsize5000_nmodel500.txt &'))
