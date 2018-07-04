@@ -191,10 +191,4 @@ mdl_svr = tune.svm(MEDV~., data = ds2_train, kernel = "radial", gamma = 2^c(-10:
 svr.pred = predict(mdl_svr$best.model, ds2_test_x)
 rmse(svr.pred, ds2_test_y, "svr")
 #
-tuneResult <- tune(svm, MEDV~.,  data = ds2_train,
-                   ranges = list(epsilon = seq(0,1,0.01), cost = 2^(2:9))
-)
-tunedModel <- tuneResult$best.model
-tunedModelY <- predict(tunedModel, ds2_test_x)
-rmse(tunedModelY, ds2_test_y, "svr tune")
 

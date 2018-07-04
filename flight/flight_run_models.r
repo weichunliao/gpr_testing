@@ -25,6 +25,7 @@ setwd("~/Desktop/gpr_testing/flight/")
 
 tmp = fread('./processed_ttest.txt')
 tmp$V1 = NULL
+tmp$DEPARTURE_DELAY = NULL
 ds = as.data.frame(tmp)
 
 # step0. select column
@@ -33,11 +34,11 @@ ds = as.data.frame(tmp)
 #              "US", "VX", "WN")
 # random permutation
 set.seed(2018)
-ds = ds[,c(2:36)]
+# ds = ds[,c(2:36)]
 ds <- ds[sample(nrow(ds)),]
 
 # step1. set testing size
-test_size = floor(nrow(ds)/10)
+test_size = floor(nrow(ds)/5)
 test_idx = sample(nrow(ds), test_size)
 ds_train = ds[-test_idx,]
 ds_test = ds[test_idx,]
@@ -45,9 +46,12 @@ ds_test_y = as.matrix(ds_test$ARRIVAL_DELAY)
 
 # step2. shift mean to zero
 ds2 = ds
+##### ver.1
 # ds2$ARRIVAL_DELAY = log(ds2$ARRIVAL_DELAY+88)
-ds2$ARRIVAL_DELAY = log(ds2$ARRIVAL_DELAY+88)
-mean_shift = mean(log(ds_train$ARRIVAL_DELAY+88))
+# mean_shift = mean(log(ds_train$ARRIVAL_DELAY+88))
+# ds2$ARRIVAL_DELAY = ds2$ARRIVAL_DELAY - mean_shift
+##### ver.2
+mean_shift = mean(ds_train$ARRIVAL_DELAY)
 ds2$ARRIVAL_DELAY = ds2$ARRIVAL_DELAY - mean_shift
 
 # step3. feature normailize (distance)
@@ -114,7 +118,7 @@ tmp_xgb <- xgboost(data = data.matrix(ds2_train_x),
                    label = ds2_train_y,
                    eta = 0.3,
                    max_depth = 5,
-                   nround = 200,
+                   nround = 300,
                    subsample = 0.5,
                    colsample_bytree = 1,
                    seed = 1

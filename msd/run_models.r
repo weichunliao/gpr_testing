@@ -130,16 +130,16 @@ t2=system.time(gbm_model2 <- gbm_train(ds2_trainmx, ds2_train_y, ds2_testmx, ds2
 
 # run gpr_sr
 kern_param2 = readRDS('./kern_param2.rds')
-bsize = 6750
-nmodel = 500
+bsize = 25000
+nmodel = 700
 update_k = 50
-lr = 0.3
+lr = 0.05
 # session_pid = Sys.getpid()
 # cmd_arg = paste('pidstat \\-r \\-t 60 \\-p', session_pid, sep = ' ')
-# system(paste(cmd_arg, '> sr_bsize5000_nmodel500.txt &'))
+# system(paste(cmd_arg, '> sr_bsize20000_nmodel500.txt &'))
 t3=system.time(gbm_model3 <- gbm_train(ds2_trainmx, ds2_train_y, ds2_testmx, ds2_test_y, pred_method = "gbm_sr",
                                        n_model = nmodel, batch_size = bsize, lr = lr, tune_param = TRUE,
-                                       update_kparam_tiems = update_k, tune_size = 1000,
+                                       update_kparam_tiems = update_k, tune_size = 2000, decay_lr = 0.9, sr_size = 10000,
                                        kname = "gaussiandotrel", ktheta = kern_param2$thetarel,
                                        kbetainv = kern_param2$betainv))
 # system(paste("kill $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
@@ -206,18 +206,18 @@ rmse(pred_rf2, ds2_test_y, "random forest")
 
 # try svr ###########################
 #  linear
-time.linear = system.time(mdl_svr <- svm(yy~., ds2_train, kernel = "linear"))
-svr.pred = predict(mdl_svr, ds2_testmx)
+time.linear = system.time(mdl_svr <- svm(y~., ds2_train, kernel = "linear"))
+svr.pred = predict(mdl_svr, ds2_test_x)
 rmse_svr = rmse(svr.pred, ds2_test_y, "svr linear")
 
 # poly
-time.poly = system.time(mdl_svr <- svm(yy~., ds2_train, kernel = "polynomial", degree = 3))
-svr.pred = predict(mdl_svr, ds2_testmx)
+time.poly = system.time(mdl_svr <- svm(y~., ds2_train, kernel = "polynomial", degree = 3))
+svr.pred = predict(mdl_svr, ds2_test_x)
 rmse_svr = rmse(svr.pred, ds2_test_y, "svr poly")
 
 # rbf
-time.rbf = system.time(mdl_svr <- tune.svm(yy~., data = ds2_train, kernel = "radial", gamma = 2^c(-8:0), cost = 2^c(-4:4)))
-svr.pred = predict(mdl_svr$best.model, ds2_testmx)
+time.rbf = system.time(mdl_svr <- tune.svm(y~., data = ds2_train[1:2000,], kernel = "radial", gamma = 2^c(-8:0), cost = 2^c(-4:4)))
+svr.pred = predict(mdl_svr$best.model, ds2_test_x)
 rmse_svr = rmse(svr.pred, ds2_test_y, "svr rbf")
 
 
