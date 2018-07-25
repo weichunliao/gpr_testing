@@ -14,10 +14,10 @@ rmse <- function(y_hat, y, method = "") {
   return(out)
 }
 #####
-
+setwd('~/Desktop/gpr_testing/msd')
 # step1. load dataset
 ds1 <- fread('./YearPredictionMSD.txt', header = FALSE)
-load("./kern_gpr_param.rdata")
+# load("./kern_gpr_param.rdata")
 # ds1[1:5,1:5]
 
 setnames(ds1, c('yy', paste('x', 1:90, sep = '')))
@@ -170,17 +170,34 @@ pred_ols = predict(lm.fit, newdata = as.data.frame(ds2_testmx))
 rmse_ols <- rmse(pred_ols, ds2_test_y, "ols")
 
 # xgboost
-tmp_xgb <- xgboost(data = data.matrix(ds2_trainmx),
-                   label = ds2_train_y,
-                   eta = 0.05,
-                   max_depth = 20,
-                   nround = 200,
-                   subsample = 0.3,
-                   colsample_bytree = 1,
-                   seed = 1
-)
-pred_xgb <- predict(tmp_xgb, data.matrix(ds2_testmx))
-rmse_xgb <- rmse(pred_xgb, ds2_test_y, "xgboost")
+f = list(cb.save.model(save_period = 1, save_name = "xgboost_%i.model"))
+# test_rmse = rep(0, 500)
+# for (i in c(1:500)) {
+  tmp_xgb <- xgboost(data = data.matrix(ds2_trainmx),
+                     label = ds2_train_y,
+                     eta = 0.06,
+                     max_depth = 20,
+                     nround = 500,
+                     subsample = 0.7,
+                     colsample_bytree = 1,
+                     seed = 1,
+                     callbacks = f
+  )
+  pred_xgb <- predict(tmp_xgb, data.matrix(ds2_testmx))
+  rmse_xgb <- rmse(pred_xgb, ds2_test_y, "xgboost")
+  # test_rmse[i] <- rmse_xgb
+# }
+
+test_rmse = rep(0, 500)
+for (i in c(1:500)) {
+  print(sprintf("xgboost_%i.model", i))
+  bst <- xgb.load(sprintf("xgboost_%i.model", i))
+  pred_xgb <- predict(bst, data.matrix(ds2_testmx))
+  rmse_xgb <- rmse(pred_xgb, ds2_test_y, "xgboost")
+  test_rmse[i] <- rmse_xgb
+}
+
+
 
 # try kNN
 pred_knn <- knn.reg(ds2_trainmx, ds2_testmx, ds2_train_y, k = 5)$pred
@@ -199,7 +216,7 @@ pred_ridge = predict(mdl_ridge, newx = data.matrix(ds2_testmx))
 rmse(pred_ridge, ds2_test_y, "RIDGE")
 
 # try random forest
-mdl_rf = ranger(yy ~ ., data = ds2_train, num.trees = 100, mtry = 12, write.forest = T)
+mdl_rf = ranger(yy ~ ., data = ds2_train, num.trees = 200, mtry = 12, write.forest = T)
 pred_rf = predict(mdl_rf, ds2_test)
 pred_rf2 = pred_rf$predictions
 rmse(pred_rf2, ds2_test_y, "random forest")

@@ -36,14 +36,14 @@ flds <- createFolds(c(1:ndata), k = k, list = TRUE, returnTrain = FALSE)
 results = vector("list", k)
 rmse_list = vector('numeric')
 
-method = "gbm2"
+# method = "gbm2"
 # method = "gbm3"
 # method = "gbm_sr"
 # method = "ols"
 # method = "losso"
 # method = "ridge"
 # method = "knn"
-# method = "xgboost"
+method = "xgboost"
 # method = "rf"
 # method = "svr_linear"
 # method = "svr_poly"
@@ -145,7 +145,7 @@ for (kfld in c(1:k)) {
     n_feature = ncol(k_ds_train)
     tmp_xgb <- xgboost(data = data.matrix(k_ds2_train_x),
                        label = k_ds2_train_y,
-                       eta = 0.01,
+                       eta = 0.008,
                        max_depth = 7,
                        nround = 250,
                        subsample = 0.7,

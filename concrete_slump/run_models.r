@@ -157,12 +157,12 @@ rmse_ols <- rmse(pred_ols, ds2_test_y_con, "ols")
 n_feature = ncol(ds2_train_x)
 tmp_xgb <- xgboost(data = data.matrix(ds2_train_x),
                    label = ds2_train_yyy,
-                   eta = 0.015,
+                   eta = 0.009,
                    max_depth = 4,
-                   nround = 50,
-                   subsample = 0.7,
+                   nround = 100,
+                   subsample = 0.6,
                    nthread = 4,
-                   colsample_bytree = 1,
+                   colsample_bytree = 0.9,
                    seed = 1
 )
 pred_xgb <- predict(tmp_xgb, ds2_test_x)

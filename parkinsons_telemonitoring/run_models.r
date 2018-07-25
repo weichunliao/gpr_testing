@@ -20,7 +20,7 @@ rmse <- function(y_hat, y, method = "") {
 # source('~/Desktop/baeirGPR/R/gpr_tuning.R')
 # source('~/Desktop/baeirGPR/R/boosting_gpr.R')
 #####
-# setwd("~/Desktop/gpr_testing/parkinsons_telemonitoring")
+setwd("~/Desktop/gpr_testing/parkinsons_telemonitoring")
 
 # The main aim of the data is to predict the
 # motor and total UPDRS scores ('motor_UPDRS' and 'total_UPDRS') from the 16
@@ -125,35 +125,35 @@ system(paste("kill $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }'
 
 
 #gpr3
-bsize = 100
+bsize = 5000
 nmodel = 700
 update_k = 20
 lr = 0.01
-session_pid = Sys.getpid()
-cmd_arg = paste('pidstat \\-r \\-t 15 \\-p', session_pid, sep = ' ')
-system(paste(cmd_arg, '> gbm3_bsize100_nmodel700.txt &'))
+# session_pid = Sys.getpid()
+# cmd_arg = paste('pidstat \\-r \\-t 15 \\-p', session_pid, sep = ' ')
+# system(paste(cmd_arg, '> gbm3_bsize100_nmodel700.txt &'))
 t2=system.time(gbm_model2 <- gbm_train(ds2_train_x, ds2_train_y, ds2_test_x, ds2_test_y, pred_method = "3",
                                        n_model = nmodel, batch_size = bsize, lr = lr, tune_param = FALSE,
                                        update_kparam_tiems = update_k, tune_size = 1000,
                                        kname = "gaussiandotrel", ktheta = kern_param1$thetarel,
                                        kbetainv = kern_param1$betainv))
-system(paste("kill $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
+# system(paste("kill $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
 
 
 #gpr sr
-bsize = 670
+bsize = 3500
 nmodel = 500
 update_k = 20
 lr = 0.01
-session_pid = Sys.getpid()
-cmd_arg = paste('pidstat \\-r \\-t 15 \\-p', session_pid, sep = ' ')
-system(paste(cmd_arg, '> sr_bsize670_nmodel500.txt &'))
+# session_pid = Sys.getpid()
+# cmd_arg = paste('pidstat \\-r \\-t 15 \\-p', session_pid, sep = ' ')
+# system(paste(cmd_arg, '> sr_bsize670_nmodel500.txt &'))
 t3=system.time(gbm_model3 <- gbm_train(ds2_train_x, ds2_train_y, ds2_test_x, ds2_test_y, pred_method = "gbm_sr",
                                        n_model = nmodel, batch_size = bsize, lr = lr, tune_param = TRUE,
                                        update_kparam_tiems = update_k, tune_size = 1000,
                                        kname = "gaussiandotrel", ktheta = kern_param1$thetarel,
                                        kbetainv = kern_param1$betainv))
-system(paste("kill $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
+# system(paste("kill $(ps aux | grep -i '", cmd_arg ,"' | awk -F' ' '{ print $2 }')", sep=''))
 
 
 
