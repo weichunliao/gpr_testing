@@ -1,12 +1,12 @@
 library(data.table)
 
 library(laGP)
-# library(xgboost)
-# library(FNN)
-# library(glmnet)
-# library(ranger)
-# library(e1071)
-#
+library(xgboost)
+library(FNN)
+library(glmnet)
+library(ranger)
+library(e1071)
+
 # library(baeirGPR)
 #####
 rmse <- function(y_hat, y, method = "") {
@@ -17,10 +17,10 @@ rmse <- function(y_hat, y, method = "") {
 #####
 
 setwd('~/Desktop/gpr_testing/kin40k/')
-ds_train_x = as.matrix(fread('./kin40k_train_data.asc'))
-ds_train_y = as.matrix(fread('./kin40k_train_labels.asc'))
-ds_test_x = as.matrix(fread('./kin40k_test_data.asc'))
-ds_test_y = as.matrix(fread('./kin40k_test_labels.asc'))
+ds_test_x = as.matrix(fread('./kin40k_train_data.asc'))
+ds_test_y = as.matrix(fread('./kin40k_train_labels.asc'))
+ds_train_x = as.matrix(fread('./kin40k_test_data.asc'))
+ds_train_y = as.matrix(fread('./kin40k_test_labels.asc'))
 
 # mean_shift + normalize
 mean_shift_y = mean(ds_train_y)
@@ -45,17 +45,32 @@ Xref = ds2_test_x
 
 ################ mspe #######################
 # t0 = Sys.time()
-# p.mspe = laGP(Xref, 1000, 1100, X, Y, method="mspe")
+# p.mspe = laGP(Xref, 900, 1000, X, Y, method="mspe")
 # t1 = Sys.time()
 # print(t1-t0)
 # rmse(p.mspe$mean, ds_test_y, "p.mspe")
 
 # ########## alc ###################
+# t0 = Sys.time()
+# p.alc = laGP(Xref, 900, 1000, X, Y, method="alc")
+# t1 = Sys.time()
+# print(t1-t0)
+# rmse(p.alc$mean, ds2_test_y, "alc")
+
+
+################# svr ################
+ds2_train = as.data.frame(cbind(ds2_train_x, ds2_train_y))
+setnames(ds2_train, c(paste('V', 1:8, sep = ''), 'y'))
 t0 = Sys.time()
-p.alc = laGP(Xref, 900, 1000, X, Y, method="alc")
+sub_train_idx = sample(nrow(ds2_train), 5000)
+mdl_svr = tune.svm(y~., data = ds2_train[sub_train_idx,], kernel = "radial", gamma = 2^c(-10:-2), cost = 2^c(-2:6))
+svr.pred = predict(mdl_svr$best.model, ds2_test_x)
 t1 = Sys.time()
 print(t1-t0)
-rmse(p.alc$mean, ds2_test_y, "alc")
+rmse(svr.pred, ds2_test_y, "svr")
+
+
+
 
 
 

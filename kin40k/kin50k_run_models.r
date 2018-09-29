@@ -173,8 +173,14 @@ svr.pred = predict(mdl_svr, ds2_test_x)
 rmse(svr.pred, ds2_test_y, "svr")
 
 # rbf kernel
-mdl_svr = tune.svm(y~., data = ds2_train[1:4000,], kernel = "radial", gamma = 2^c(-10:-2), cost = 2^c(-2:6))
+ds2_train = as.data.frame(cbind(ds2_train_x, ds2_train_y))
+setnames(ds2_train, c(paste('V', 1:8, sep = ''), 'y'))
+t0 = Sys.time()
+sub_train_idx = sample(nrow(ds2_train), 5000)
+mdl_svr = tune.svm(y~., data = ds2_train[sub_train_idx,], kernel = "radial", gamma = 2^c(-10:-2), cost = 2^c(-2:6))
 svr.pred = predict(mdl_svr$best.model, ds2_test_x)
+t1 = Sys.time()
+print(t1-t0)
 rmse(svr.pred, ds2_test_y, "svr")
 #
 # tuneResult <- tune(svm, MEDV~.,  data = ds2_train,
